@@ -1,6 +1,9 @@
 package com.example.purebasketbe.domain.product;
 
+import com.example.purebasketbe.domain.product.dto.ProductListResponseDto;
 import com.example.purebasketbe.domain.product.dto.ProductRequestDto;
+import com.example.purebasketbe.domain.product.dto.ProductResponseDto;
+import com.example.purebasketbe.domain.product.entity.Event;
 import com.example.purebasketbe.domain.product.entity.Image;
 import com.example.purebasketbe.domain.product.entity.Product;
 import com.example.purebasketbe.global.exception.CustomException;
@@ -9,12 +12,16 @@ import io.awspring.cloud.s3.ObjectMetadata;
 import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +39,37 @@ public class ProductService {
     private String bucket;
     @Value("${spring.cloud.aws.region.static}")
     private String region;
+
+    @Transactional(readOnly = true)
+    public ProductListResponseDto getProducts(int eventPage, int page) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "modifiedAt");
+
+        Pageable eventPageable = PageRequest.of(eventPage, pageSize, sort);
+        Slice<Product> eventProducts = productRepository.findAllByDeletedAndEvent(false, Event.DISCOUNT, eventPageable);
+
+        List<ProductResponseDto> responseDtoList = new ArrayList<>();
+        for (Product product : eventProducts) {
+            responseDtoList.add(pageToDto(product));
+        }
+
+        Page<ProductResponseDto> eventPageResponse = new PageImpl<>(responseDtoList);
+
+    }
+
+    private ProductResponseDto pageToDto(Product product) {
+        List<URL> imageUrlList = imageRepository.findAllByProductId(product.getId())
+                .stream()
+                .map(Image::getImgUrl)
+                .map((string) -> {
+                    try {
+                        return new URL(string);
+                    } catch (MalformedURLException e) {
+                        throw new CustomException(ErrorCode.INVALID_IMAGE);
+                    }
+                })
+                .toList();
+        return ProductResponseDto.of(product, imageUrlList);
+    }
 
     @Transactional
     public void registerProduct(ProductRequestDto requestDto, List<MultipartFile> files) {
