@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ImageRequestDto {
+public class ImageUploadDto {
 
     private String name;
 
