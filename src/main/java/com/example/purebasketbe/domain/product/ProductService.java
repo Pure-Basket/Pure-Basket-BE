@@ -10,7 +10,10 @@ import io.awspring.cloud.s3.ObjectMetadata;
 import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,14 +44,14 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductListResponseDto getProducts(int eventPage, int page) {
-        Pageable eventPageable = getPageable(eventPage);
+        Pageable eventPageable = getPageable(eventPage, eventPageSize);
         Page<Product> eventProducts = productRepository.findAllByDeletedAndEvent(false, Event.DISCOUNT, eventPageable);
-        Page<ProductResponse> eventProductsResponse = eventProducts.map(ProductResponse::from);
+        Page<ProductResponseDto> eventProductsResponse = eventProducts.map(ProductResponseDto::from);
         List<ImageResponseDto> eventImageUrlResponse = getImageUrlResponse(eventProducts);
 
-        Pageable pageable = getPageable(page);
+        Pageable pageable = getPageable(page, pageSize);
         Page<Product> products = productRepository.findAllByDeletedAndEvent(false, Event.NORMAL, pageable);
-        Page<ProductResponse> productsResponse = products.map(ProductResponse::from);
+        Page<ProductResponseDto> productsResponse = products.map(ProductResponseDto::from);
         List<ImageResponseDto> imageUrlResponse = getImageUrlResponse(products);
 
         return ProductListResponseDto.of(eventProductsResponse, eventImageUrlResponse, productsResponse, imageUrlResponse);
@@ -56,26 +59,35 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductListResponseDto searchProducts(String query, String category, int eventPage, int page) {
-        Pageable eventPageable = getPageable(eventPage);
-        Page<Product> eventProducts = productRepository.findAllByDeletedAndEventAndCategoryAndNameContainsIgnoreCase(
-                false, Event.DISCOUNT, category, query, eventPageable);
-        Page<ProductResponse> eventProductsResponse = eventProducts.map(ProductResponse::from);
-        List<ImageResponseDto> eventImageUrlResponse = getImageUrlResponse(eventProducts);
+        Pageable eventPageable = getPageable(eventPage, eventPageSize);
+        Pageable pageable = getPageable(page, pageSize);
 
-        Pageable pageable = getPageable(page);
-        Page<Product> products = productRepository.findAllByDeletedAndEventAndCategoryAndNameContainsIgnoreCase(
-                false, Event.NORMAL, category, query, pageable);
-        Page<ProductResponse> productsResponse = products.map(ProductResponse::from);
+        Page<Product> eventProducts;
+        Page<Product> products;
+        if (category.isEmpty()) {
+            eventProducts = productRepository.findAllByDeletedAndEventAndNameContains(
+                    false, Event.DISCOUNT, query, eventPageable);
+            products = productRepository.findAllByDeletedAndEventAndNameContains(
+                    false, Event.NORMAL, query, pageable);
+        } else {
+            eventProducts = productRepository.findAllByDeletedAndEventAndCategoryAndNameContains(
+                    false, Event.DISCOUNT, category, query, eventPageable);
+            products = productRepository.findAllByDeletedAndEventAndCategoryAndNameContains(
+                    false, Event.NORMAL, category, query, pageable);
+        }
+        Page<ProductResponseDto> eventProductsResponse = eventProducts.map(ProductResponseDto::from);
+        List<ImageResponseDto> eventImageUrlResponse = getImageUrlResponse(eventProducts);
+        Page<ProductResponseDto> productsResponse = products.map(ProductResponseDto::from);
         List<ImageResponseDto> imageUrlResponse = getImageUrlResponse(products);
 
         return ProductListResponseDto.of(eventProductsResponse, eventImageUrlResponse, productsResponse, imageUrlResponse);
     }
 
     @Transactional(readOnly = true)
-    public ProductResponseDto getProduct(Long productId) {
+    public ProductDetailResponseDto getProduct(Long productId) {
         Product product = findProduct(productId);
         List<String> imageUrlList = getImgUrlList(product);
-        return ProductResponseDto.of(product, imageUrlList);
+        return ProductDetailResponseDto.of(product, imageUrlList);
     }
 
     @Transactional
@@ -104,13 +116,15 @@ public class ProductService {
     @Transactional
     public void deleteProduct(Long productId) {
         Product product = findProduct(productId);
-        product.delete();
+        product.softDelete();
+        imageRepository.findAllByProductId(productId)
+                .forEach(image -> s3Template.deleteObject(bucket, getKey(image.getImgUrl())));
         imageRepository.deleteAllByProductId(productId);
     }
 
-    private Pageable getPageable(int page) {
+    private Pageable getPageable(int page, int pageSize) {
         Sort sort = Sort.by(Sort.Direction.DESC, "modifiedAt");
-        return PageRequest.of(page, eventPageSize, sort);
+        return PageRequest.of(page, pageSize, sort);
     }
 
     private List<ImageResponseDto> getImageUrlResponse(Page<Product> products) {
@@ -144,6 +158,13 @@ public class ProductService {
         imageRepository.save(newimage);
 
         s3Template.upload(bucket, key, inputStream, metadata);
+    }
+
+    private String getKey(String imgUrl) {
+        int lastIndex = imgUrl.lastIndexOf("/");
+        if (lastIndex != -1 && lastIndex < imgUrl.length() - 1) {
+            return imgUrl.substring(lastIndex + 1);
+        } else throw new CustomException(ErrorCode.INVALID_IMAGE);
     }
 
     private void checkExistProductByName(String name) {

@@ -1,7 +1,7 @@
 package com.example.purebasketbe.domain.product;
 
+import com.example.purebasketbe.domain.product.dto.ProductDetailResponseDto;
 import com.example.purebasketbe.domain.product.dto.ProductListResponseDto;
-import com.example.purebasketbe.domain.product.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +28,13 @@ public class ProductController {
             @RequestParam(defaultValue = "", required = false) String category,
             @RequestParam(defaultValue = "1", required = false) int eventPage,
             @RequestParam(defaultValue = "1", required = false) int page) {
-        ProductListResponseDto responseBody = productService.searchProducts(query, category, eventPage, page);
+        ProductListResponseDto responseBody = productService.searchProducts(query, category, eventPage - 1, page - 1);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long productId) {
-        ProductResponse responseBody = productService.getProduct(productId);
+    public ResponseEntity<ProductDetailResponseDto> getProduct(@PathVariable Long productId) {
+        ProductDetailResponseDto responseBody = productService.getProduct(productId);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 }
