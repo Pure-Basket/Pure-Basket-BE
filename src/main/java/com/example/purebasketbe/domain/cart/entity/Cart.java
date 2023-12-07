@@ -1,8 +1,8 @@
 package com.example.purebasketbe.domain.cart.entity;
 
 import com.example.purebasketbe.domain.cart.dto.CartRequestDto;
+import com.example.purebasketbe.domain.member.entity.Member;
 import com.example.purebasketbe.domain.product.entity.Product;
-import com.example.purebasketbe.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,24 +33,29 @@ public class Cart {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
     @Builder
-    private Cart(int amount, User user, Product product) {
+    private Cart(int amount, Member member, Product product) {
         this.amount = amount;
-        this.user = user;
+        this.member = member;
         this.product = product;
     }
 
-    public static Cart of(CartRequestDto requestDto, User user, Product product) {
+    public void updateCart(CartRequestDto requestDto)
+    {
+        this.amount = amount;
+    }
+
+    public static Cart of(CartRequestDto requestDto, Member member, Product product) {
         return Cart.builder()
-            .amount(requestDto.getAmount())
-            .user(user)
-            .product(product)
-            .build();
+                .amount(requestDto.getAmount())
+                .member(member)
+                .product(product)
+                .build();
     }
 }

@@ -31,3 +31,4 @@ public record ProductRequestDto(
         Integer discountRate
 ) {
 }
+
