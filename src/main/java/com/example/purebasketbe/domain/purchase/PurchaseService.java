@@ -4,14 +4,11 @@ import com.example.purebasketbe.domain.cart.CartRepository;
 import com.example.purebasketbe.domain.member.entity.Member;
 import com.example.purebasketbe.domain.product.ProductRepository;
 import com.example.purebasketbe.domain.product.entity.Product;
-import com.example.purebasketbe.domain.purchase.dto.PurchaseHistoryResponseDto;
+import com.example.purebasketbe.domain.purchase.dto.PurchaseResponseDto;
 import com.example.purebasketbe.domain.purchase.dto.PurchaseRequestDto.PurchaseDetail;
 import com.example.purebasketbe.domain.purchase.entity.Purchase;
 import com.example.purebasketbe.global.exception.CustomException;
 import com.example.purebasketbe.global.exception.ErrorCode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +17,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +37,13 @@ public class PurchaseService {
     public void purchaseProducts(final List<PurchaseDetail> purchaseRequestDto, Member member) {
         int size = purchaseRequestDto.size();
         List<PurchaseDetail> sortedPurchaseDetailList = purchaseRequestDto.stream()
-            .sorted(Comparator.comparing(PurchaseDetail::getProductId)).toList();
+                .sorted(Comparator.comparing(PurchaseDetail::getProductId)).toList();
         List<Long> requestIds = sortedPurchaseDetailList.stream().map(PurchaseDetail::getProductId).toList();
         List<Product> validProductList = productRepository.findByIdIn(requestIds);
         validateProducts(size, validProductList);
 
         List<Integer> amountList = sortedPurchaseDetailList.stream()
-            .map(PurchaseDetail::getAmount).toList();
+                .map(PurchaseDetail::getAmount).toList();
 
         List<Purchase> purchaseList = new ArrayList<>();
 
@@ -67,7 +68,7 @@ public class PurchaseService {
 
     @Transactional(readOnly = true)
 
-    public Page<PurchaseHistoryResponseDto> getPurchaseHistory(Member member, int page, String sortBy, String order) {
+    public Page<PurchaseResponseDto> getPurchases(Member member, int page, String sortBy, String order) {
 
         Sort.Direction direction = Direction.valueOf(order.toUpperCase());
         Sort sort = Sort.by(direction, sortBy);
@@ -75,11 +76,9 @@ public class PurchaseService {
 
         Page<Purchase> purchases = purchaseRepository.findAllByMember(member, pageable);
 
-        // Product table에서 soft delete하므로 purchase에 있는 product는 항상 존재함
-        // Product의 CascadeType.REMOVE
         return purchases.map(purchase -> {
             Product product = getProductById(purchase.getProduct().getId());
-            return PurchaseHistoryResponseDto.of(product, purchase);
+            return PurchaseResponseDto.of(product, purchase);
         });
     }
 
@@ -97,7 +96,7 @@ public class PurchaseService {
 
     private Product getProductById(Long id) {
         return productRepository.findById(id).orElseThrow(
-            () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
         );
     }
 }

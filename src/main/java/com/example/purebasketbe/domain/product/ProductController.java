@@ -23,5 +23,4 @@ public class ProductController {
         ProductListResponseDto responseBody = productService.getProducts(eventPage - 1, page - 1);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
-
 }
