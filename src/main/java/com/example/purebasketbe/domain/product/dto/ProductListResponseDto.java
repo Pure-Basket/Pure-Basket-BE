@@ -4,26 +4,26 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductListResponseDto {
 
-    private List<ProductResponseDto> eventProducts;
-    private List<ProductResponseDto> products;
+    private Page<ProductResponseDto> eventProducts;
+    private Page<ProductResponseDto> products;
 
 
     @Builder
-    private ProductListResponseDto(List<ProductResponseDto> eventProducts,
-                                   List<ProductResponseDto> products) {
+    private ProductListResponseDto(Page<ProductResponseDto> eventProducts,
+                                   Page<ProductResponseDto> products) {
         this.eventProducts = eventProducts;
         this.products = products;
     }
 
-    public static ProductListResponseDto of(List<ProductResponseDto> eventProducts,
-                                            List<ProductResponseDto> products) {
+    public static ProductListResponseDto of(Page<ProductResponseDto> eventProducts,
+                                            Page<ProductResponseDto> products) {
         return ProductListResponseDto.builder()
                 .eventProducts(eventProducts)
                 .products(products)
