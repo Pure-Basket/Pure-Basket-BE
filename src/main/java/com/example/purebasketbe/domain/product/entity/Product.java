@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @Table(name = "product")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -89,12 +88,11 @@ public class Product {
         this.modifiedAt = LocalDateTime.now();
     }
 
-    public void delete() {
-        this.name += "deleted";
+    public void softDelete() {
+        this.name += "-deleted";
         this.modifiedAt = LocalDateTime.now();
         this.deleted = true;
     }
-
 
     public void incrementSalesCount(int amount) {
         this.salesCount += amount;

@@ -35,12 +35,12 @@ public class BackOfficeProductController {
             @RequestParam(defaultValue = "", required = false) String category,
             @RequestParam(defaultValue = "1", required = false) int eventPage,
             @RequestParam(defaultValue = "1", required = false) int page) {
-        ProductListResponseDto responseBody = productService.searchProducts(query, category, eventPage, page);
+        ProductListResponseDto responseBody = productService.searchProducts(query, category, eventPage - 1, page - 1);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> registerProduct(@RequestBody @Validated ProductRequestDto requestDto,
+    public ResponseEntity<Void> registerProduct(@RequestPart(value = "dto") @Validated ProductRequestDto requestDto,
                                                 @RequestPart(value = "files") List<MultipartFile> files) {
         productService.registerProduct(requestDto, files);
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
@@ -50,7 +50,7 @@ public class BackOfficeProductController {
 
     @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateProduct(@PathVariable Long productId,
-                                              @RequestBody @Validated ProductRequestDto requestDto,
+                                              @RequestPart(value = "dto") @Validated ProductRequestDto requestDto,
                                               @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         List<MultipartFile> fileList = Optional.ofNullable(files).orElse(List.of());
         productService.updateProduct(productId, requestDto, fileList);
