@@ -1,13 +1,11 @@
 package com.example.purebasketbe.domain.product;
 
 import com.example.purebasketbe.domain.product.dto.ProductListResponseDto;
+import com.example.purebasketbe.domain.product.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +19,22 @@ public class ProductController {
             @RequestParam(defaultValue = "1", required = false) int eventPage,
             @RequestParam(defaultValue = "1", required = false) int page) {
         ProductListResponseDto responseBody = productService.getProducts(eventPage - 1, page - 1);
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ProductListResponseDto> searchProducts(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "", required = false) String category,
+            @RequestParam(defaultValue = "1", required = false) int eventPage,
+            @RequestParam(defaultValue = "1", required = false) int page) {
+        ProductListResponseDto responseBody = productService.searchProducts(query, category, eventPage, page);
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long productId) {
+        ProductResponse responseBody = productService.getProduct(productId);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 }
