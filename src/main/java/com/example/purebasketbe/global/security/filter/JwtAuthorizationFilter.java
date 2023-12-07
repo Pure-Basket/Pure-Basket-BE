@@ -42,7 +42,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(token) && token != null) {
 
                 String tokenValue = jwtUtil.substringToken(token);
-                logger.error("토큰 확인용 : "+tokenValue);
+                logger.info("토큰 확인용 : "+tokenValue);
                 jwtUtil.validateToken(tokenValue);
 
                 Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
@@ -56,7 +56,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }catch (Exception e){
             req.setAttribute("exception",e);
         }
-        logger.error(req.getRequestURI());
+        logger.info(req.getRequestURI());
         filterChain.doFilter(req, res);
     }
 
