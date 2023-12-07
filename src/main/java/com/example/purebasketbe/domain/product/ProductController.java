@@ -1,7 +1,7 @@
 package com.example.purebasketbe.domain.product;
 
-import com.example.purebasketbe.domain.product.dto.ProductDetailResponseDto;
 import com.example.purebasketbe.domain.product.dto.ProductListResponseDto;
+import com.example.purebasketbe.domain.product.dto.ProductDetailResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

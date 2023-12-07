@@ -10,10 +10,7 @@ import io.awspring.cloud.s3.ObjectMetadata;
 import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -168,8 +165,9 @@ public class ProductService {
     }
 
     private void checkExistProductByName(String name) {
-        if (productRepository.existsByName(name))
+        if (productRepository.existsByName(name)) {
             throw new CustomException(ErrorCode.PRODUCT_ALREADY_EXISTS);
+        }
     }
 
     private Product findProduct(Long id) {
