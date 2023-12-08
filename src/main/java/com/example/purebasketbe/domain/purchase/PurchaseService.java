@@ -4,8 +4,8 @@ import com.example.purebasketbe.domain.cart.CartRepository;
 import com.example.purebasketbe.domain.member.entity.Member;
 import com.example.purebasketbe.domain.product.ProductRepository;
 import com.example.purebasketbe.domain.product.entity.Product;
-import com.example.purebasketbe.domain.purchase.dto.PurchaseResponseDto;
 import com.example.purebasketbe.domain.purchase.dto.PurchaseRequestDto.PurchaseDetail;
+import com.example.purebasketbe.domain.purchase.dto.PurchaseResponseDto;
 import com.example.purebasketbe.domain.purchase.entity.Purchase;
 import com.example.purebasketbe.global.exception.CustomException;
 import com.example.purebasketbe.global.exception.ErrorCode;
@@ -32,21 +32,20 @@ public class PurchaseService {
 
     private final int PRODUCTS_PER_PAGE = 20;
 
-
     @Transactional
     public void purchaseProducts(final List<PurchaseDetail> purchaseRequestDto, Member member) {
         int size = purchaseRequestDto.size();
         List<PurchaseDetail> sortedPurchaseDetailList = purchaseRequestDto.stream()
                 .sorted(Comparator.comparing(PurchaseDetail::getProductId)).toList();
-        List<Long> requestIds = sortedPurchaseDetailList.stream().map(PurchaseDetail::getProductId).toList();
+        List<Long> requestIds = sortedPurchaseDetailList.stream()
+                .map(PurchaseDetail::getProductId).toList();
+
         List<Product> validProductList = productRepository.findByIdIn(requestIds);
         validateProducts(size, validProductList);
-
         List<Integer> amountList = sortedPurchaseDetailList.stream()
                 .map(PurchaseDetail::getAmount).toList();
 
         List<Purchase> purchaseList = new ArrayList<>();
-
         for (int i = 0; i < size; i++) {
             Product product = validProductList.get(i);
             int amount = amountList.get(i);
@@ -63,13 +62,8 @@ public class PurchaseService {
         cartRepository.deleteByUserAndProductIn(member, validProductList);
     }
 
-
-
-
     @Transactional(readOnly = true)
-
     public Page<PurchaseResponseDto> getPurchases(Member member, int page, String sortBy, String order) {
-
         Sort.Direction direction = Direction.valueOf(order.toUpperCase());
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, PRODUCTS_PER_PAGE, sort);

@@ -17,13 +17,13 @@ import java.net.URI;
 @RequiredArgsConstructor
 @RequestMapping("/api/backoffice/recipes")
 public class BackOfficeRecipeController {
+
     private final RecipeService recipeService;
 
     @GetMapping
     public ResponseEntity<Page<RecipeResponseDto>> getRecipes(@RequestParam(defaultValue = "1") int page) {
         Page<RecipeResponseDto> responseBody = recipeService.getRecipes(page - 1);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(responseBody);
+        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
