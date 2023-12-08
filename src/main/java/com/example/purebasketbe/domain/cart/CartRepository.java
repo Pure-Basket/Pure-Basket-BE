@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CartRepository extends JpaRepository <Cart,Long> {
+public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Modifying
     @Query("DELETE FROM Cart c WHERE c.member=:member AND c.product IN (:products)")
     void deleteByUserAndProductIn(Member member, List<Product> products);
 
-    @Query("SELECT p.id, p.name, p.price, p.category, c.amount FROM Cart c " +
-            "JOIN FETCH c.product p " +
+    @Query("SELECT c FROM Cart c " +
+            "JOIN FETCH c.product " +
             "WHERE c.member = :member")
     List<Cart> findAllByMember(Member member);
 

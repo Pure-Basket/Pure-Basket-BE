@@ -86,8 +86,7 @@ public class CartService {
     }
 
     private Image findImage(Long productId) {
-        return imageRepository.findByProductId(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.INVALID_IMAGE)
-        );
+        return imageRepository.findAllByProductId(productId).stream().findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_IMAGE));
     }
 }
