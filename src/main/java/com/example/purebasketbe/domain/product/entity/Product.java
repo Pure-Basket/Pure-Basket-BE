@@ -12,6 +12,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 
 @Entity
 @Getter
@@ -26,10 +28,10 @@ public class Product {
     private String name;
 
     @Column(nullable = false)
-    private Integer price;
+    private int price;
 
     @Column(nullable = false)
-    private Integer stock;
+    private int stock;
 
     private String info;
 
@@ -38,9 +40,9 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private Event event;
 
-    private Integer discountRate;
+    private int discountRate;
 
-    private Integer salesCount;
+    private int salesCount;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -52,8 +54,7 @@ public class Product {
     private boolean deleted;
 
     @OneToMany(mappedBy = "product")
-    private List<Image> images = new ArrayList<>();;
-
+    private List<Image> images = new ArrayList<>();
 
     @Builder
     private Product(String name, Integer price, Integer stock, String info,
@@ -95,7 +96,7 @@ public class Product {
     }
 
     public void softDelete() {
-        this.name += "-deleted";
+        this.name += "-deleted-" + UUID.randomUUID();
         this.modifiedAt = LocalDateTime.now();
         this.deleted = true;
     }
