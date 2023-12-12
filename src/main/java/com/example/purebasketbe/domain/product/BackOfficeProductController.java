@@ -6,20 +6,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("!hasAuthority('ROLE_MEMBER')")
 @RequestMapping("/api/backoffice/products")
 public class BackOfficeProductController {
 
     private final ProductService productService;
-    private final String adminLandingPath = "/api/backoffice/products";
+    private final String ADMIN_LANDING_PATH = "/api/backoffice/products";
 
     @GetMapping
     public ResponseEntity<ProductListResponseDto> getProducts(
@@ -44,7 +47,7 @@ public class BackOfficeProductController {
                                                 @RequestPart(value = "files") List<MultipartFile> files) {
         productService.registerProduct(requestDto, files);
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                .header("Location", adminLandingPath)
+                .location(URI.create(ADMIN_LANDING_PATH))
                 .build();
     }
 
@@ -55,7 +58,7 @@ public class BackOfficeProductController {
         List<MultipartFile> fileList = Optional.ofNullable(files).orElse(List.of());
         productService.updateProduct(productId, requestDto, fileList);
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                .header("Location", adminLandingPath)
+                .location(URI.create(ADMIN_LANDING_PATH))
                 .build();
     }
 
@@ -63,7 +66,7 @@ public class BackOfficeProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                .header("Location", adminLandingPath)
+                .location(URI.create(ADMIN_LANDING_PATH))
                 .build();
     }
 }

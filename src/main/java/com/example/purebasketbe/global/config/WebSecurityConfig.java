@@ -1,5 +1,7 @@
 package com.example.purebasketbe.global.config;
 
+import com.example.purebasketbe.domain.member.MemberService;
+import com.example.purebasketbe.global.redis.RedisService;
 import com.example.purebasketbe.global.security.filter.JwtAuthenticationFilter;
 import com.example.purebasketbe.global.security.filter.JwtAuthorizationFilter;
 import com.example.purebasketbe.global.security.impl.UserDetailsServiceImpl;
@@ -24,8 +26,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@RequiredArgsConstructor
 @EnableWebSecurity
+@RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig {
 
@@ -40,6 +42,8 @@ public class WebSecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final RedisService redisService;
+    private final MemberService memberService;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -48,7 +52,7 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, redisService, memberService);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
@@ -73,15 +77,10 @@ public class WebSecurityConfig {
 
         // 접근 권한 설정
         http.authorizeHttpRequests((authorizeHttpRequests) ->
-
-//                authorizeHttpRequests
-//                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-//                        .requestMatchers(AUTH_WHITELIST).permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
-//                        .anyRequest().authenticated());
             authorizeHttpRequests
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .requestMatchers(AUTH_WHITELIST).permitAll()
+                .requestMatchers("/api/backoffice/**").hasRole(("ADMIN"))
                 .anyRequest().permitAll());
 
 
