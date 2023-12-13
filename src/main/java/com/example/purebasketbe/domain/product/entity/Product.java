@@ -54,8 +54,7 @@ public class Product {
     private boolean deleted;
 
     @OneToMany(mappedBy = "product")
-    private List<Image> images = new ArrayList<>();;
-
+    private List<Image> images = new ArrayList<>();
 
     @Builder
     private Product(String name, Integer price, Integer stock, String info,

@@ -58,4 +58,3 @@ public class Recipe {
         this.productList.add(product);
     }
 }
-

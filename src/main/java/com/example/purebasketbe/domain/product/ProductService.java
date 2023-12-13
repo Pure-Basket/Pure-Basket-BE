@@ -1,6 +1,8 @@
 package com.example.purebasketbe.domain.product;
 
-import com.example.purebasketbe.domain.product.dto.*;
+import com.example.purebasketbe.domain.product.dto.ProductListResponseDto;
+import com.example.purebasketbe.domain.product.dto.ProductRequestDto;
+import com.example.purebasketbe.domain.product.dto.ProductResponseDto;
 import com.example.purebasketbe.domain.product.entity.Event;
 import com.example.purebasketbe.domain.product.entity.Image;
 import com.example.purebasketbe.domain.product.entity.Product;
@@ -9,7 +11,10 @@ import com.example.purebasketbe.global.exception.ErrorCode;
 import com.example.purebasketbe.global.s3.S3Handler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
