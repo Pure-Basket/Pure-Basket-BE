@@ -24,7 +24,9 @@ public class CartController {
     public ResponseEntity<Void> addToCart(@PathVariable Long productId, @RequestBody @Validated CartRequestDto requestDto,
                                           @LoginAccount Member member) {
         cartService.addToCart(productId, requestDto, member);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(URI.create("/api/carts"))
+                .build();
     }
 
     @GetMapping
@@ -37,13 +39,17 @@ public class CartController {
     public ResponseEntity<Void> updateCart(@PathVariable Long productId, @RequestBody @Validated CartRequestDto requestDto,
                                            @LoginAccount Member member) {
         cartService.updateCart(productId, requestDto, member);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .location(URI.create("/api/carts"))
+                .build();
     }
 
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> deleteCart(@PathVariable Long productId, @LoginAccount Member member) {
         cartService.deleteCart(productId, member);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .location(URI.create("/api/carts"))
+                .build();
     }
 
     @PostMapping("/recipes/{recipeId}")

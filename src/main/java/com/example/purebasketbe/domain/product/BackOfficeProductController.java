@@ -46,7 +46,7 @@ public class BackOfficeProductController {
     public ResponseEntity<Void> registerProduct(@RequestPart(value = "dto") @Validated ProductRequestDto requestDto,
                                                 @RequestPart(value = "files") List<MultipartFile> files) {
         productService.registerProduct(requestDto, files);
-        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .location(URI.create(ADMIN_LANDING_PATH))
                 .build();
     }
