@@ -13,11 +13,13 @@ import com.example.purebasketbe.domain.recipe.entity.Recipe;
 import com.example.purebasketbe.global.exception.CustomException;
 import com.example.purebasketbe.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -30,6 +32,7 @@ public class CartService {
     @Transactional
     public void addToCart(Long productId, CartRequestDto requestDto, Member member) {
         Product product = findAndValidateProduct(productId);
+        checkIfExist(product);
         Cart newCart = Cart.of(product, member, requestDto);
         cartRepository.save(newCart);
     }
@@ -58,24 +61,25 @@ public class CartService {
 
     @Transactional
     public void addRecipeRelatedProductsToCarts(Long recipeId, Member member) {
-        Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(() ->
-                new CustomException(ErrorCode.RECIPE_NOT_FOUND)
-        );
+        Recipe recipe = getRecipeById(recipeId);
 
         List<Product> productList = recipe.getProductList();
         cartRepository.deleteAllByMemberAndProductIn(member, productList);
-        List<Cart> cartList = productList.stream().map(product -> Cart.of(product, member, null)).toList();
+        List<Cart> cartList = productList.stream().map(product -> Cart.of(product, member)).toList();
         cartRepository.saveAll(cartList);
     }
 
+
     private Product findAndValidateProduct(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
+        return productRepository.findByIdAndDeleted(productId, false).orElseThrow(
                 () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
         );
-        if (product.getStock() <= 0 || product.isDeleted()) {
-            throw new CustomException(ErrorCode.NOT_ENOUGH_PRODUCT);
+    }
+
+    private void checkIfExist(Product product) {
+        if (cartRepository.existsProduct(product)) {
+            throw new CustomException(ErrorCode.PRODUCT_ALREADY_ADDED);
         }
-        return product;
     }
 
     private Cart findAndValidateCart(Long productId, Member member) {
@@ -87,5 +91,11 @@ public class CartService {
     private Image findImage(Long productId) {
         return imageRepository.findAllByProductId(productId).stream().findFirst()
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_IMAGE));
+    }
+
+    private Recipe getRecipeById(Long recipeId) {
+        return recipeRepository.findById(recipeId).orElseThrow(() ->
+                new CustomException(ErrorCode.RECIPE_NOT_FOUND)
+        );
     }
 }
