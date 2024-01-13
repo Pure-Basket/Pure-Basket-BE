@@ -55,7 +55,7 @@
 
 ## 🏗️ 03. 서비스 아키텍처
 
-![image](https://github.com/Pure-Basket/Pure-Basket-BE/assets/50318500/6b010184-ae84-47b4-95c6-2c996f4f161b)
+![architecture](https://github.com/Pure-Basket/Pure-Basket-BE/assets/50318500/01ef0c7a-42f0-4dae-a25f-e2e392cbf653)
 
 <br>
 <br>
